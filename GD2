@@ -1,1 +1,37 @@
+GD2:
+1.Phân biệt OLTP (Online Transaction Processing) và OLAP (Online Analytical Processing)
+-OLTP (Xử lý giao dịch trực tuyến) là hệ thống xử lý giao dịch dữ liệu theo thời gian thực, thường dùng trong ngân hàng, thương mại điện tử, máy ATM, hệ thống bán lẻ. Các hệ thống này đảm bảo rằng dữ liệu được ghi nhận chính xác và không có lỗi khi nhiều người dùng thao tác đồng thời. 
+VD: Nếu hai người rút tiền từ một tài khoản chung, hệ thống OLTP phải đảm bảo rằng tổng số tiền rút không vượt quá số dư hiện có.
+
+-OLTP tập trung vào tính ổn định, hiệu suất cao, và đảm bảo ACID (Atomicity, Consistency, Isolation, Durability) – nghĩa là các giao dịch phải nguyên tử, nhất quán, cách ly và bền vững. Điều này đảm bảo dữ liệu không bị mất mát hoặc sai lệch.
+-OLAP (Xử lý phân tích trực tuyến) là hệ thống chuyên xử lý và phân tích dữ liệu lớn để hỗ trợ ra quyết định. Không giống OLTP, OLAP không tập trung vào việc cập nhật liên tục mà chủ yếu dùng để truy vấn và tổng hợp dữ liệu nhằm tìm ra xu hướng và mẫu hình.
+-Các hệ thống OLAP thường phục vụ một nhóm nhỏ người dùng như các nhà phân tích hoặc quản lý doanh nghiệp. 
+VD: trong ngân hàng, OLTP ghi nhận từng giao dịch, còn OLAP sẽ tổng hợp các giao dịch đó để phân tích xu hướng chi tiêu của khách hàng.
+
+-Do phải xử lý dữ liệu lớn, các truy vấn trong OLAP thường mất nhiều thời gian hơn so với OLTP. Hệ thống OLAP được tối ưu hóa để truy vấn nhanh thông qua Denormalized Schema (cấu trúc dữ liệu ít ràng buộc hơn) giúp giảm số lần truy vấn và tối ưu hiệu suất phân tích.
+VD: Trong một hệ thống ngân hàng. OLTP sẽ xử lý các giao dịch chuyển, gửi và rút tiền, những yêu cầu được thực hiện nhiều bởi nhiều người dùng, cần độ tin cậy và tốc độ cao. Trong khi đó OLAP sẽ xử lý các truy vấn lớn, yêu cầu độ phức tạp cao như tính tổng giao dịch trung bình của tất cả khách hàng mỗi tháng, tổng số tiền hiện hữu trong tất cả các tài khoản của khách hàng
+
+2. ETL (Extract - Transform - Load) và ELT (Extract - Load - Transform)
+-ETL là quy trình xử lý dữ liệu gồm ba bước: Trích xuất (Extract), Biến đổi (Transform), và Tải vào (Load). Trong mô hình này, dữ liệu được trích xuất từ các nguồn khác nhau, sau đó được làm sạch, chuyển đổi trước khi lưu vào kho dữ liệu. ETL thường được sử dụng trong các hệ thống truyền thống, nơi cần đảm bảo chất lượng dữ liệu trước khi lưu, chẳng hạn như trong ngành tài chính hoặc ngân hàng.
+-Do sự đa dạng kiểu dữ liệu và nguồn dữ liệu, sử dụng ETL sẽ giúp các dữ liệu thô từ các nguồn này được chuẩn bị theo các cấu trúc nhất định giúp chúng dễ được sử dụng và tiêu thụ hơn.
+
+-Trích xuất dữ liệu (Extract): Quá trình lấy dữ liệu từ nhiều nguồn khác nhau (cơ sở dữ liệu, tệp, API...) và lưu trữ vào khu vực trung gian (staging area) trước khi xử lý tiếp.
+-Phương pháp trích xuất:
++Thông báo cập nhật: Hệ thống nguồn gửi thông báo khi dữ liệu thay đổi, giúp cập nhật nhanh chóng.
++Trích xuất tăng dần: Định kỳ kiểm tra và lấy dữ liệu mới hoặc bị sửa đổi mà không cần tải lại toàn bộ.
++Trích xuất hoàn toàn: Tải lại tất cả dữ liệu do hệ thống không theo dõi thay đổi, tốn tài nguyên nên chỉ áp dụng cho tập dữ liệu nhỏ.
+
+-Biến đổi dữ liệu (Transform): làm sạch, chuẩn hóa và tối ưu dữ .
+
+-Tải dữ liệu (Load): tải vào hệ thống đích như kho dữ liệu (Data Warehouse) hoặc hệ thống phân tích.
+-Phương pháp tải dữ liệu:
++Tải hoàn toàn: Chuyển toàn bộ dữ liệu từ nguồn vào hệ thống đích, thường áp dụng cho lần tải đầu tiên.
++Tải tăng dần: Chỉ tải dữ liệu mới hoặc thay đổi từ lần trích xuất trước đó để tối ưu tài nguyên.
++Tải theo luồng: Dữ liệu cập nhật liên tục theo thời gian thực.
++Tải theo lô: Dữ liệu được thu thập theo từng đợt cố định (VD: hằng ngày, hằng tuần).
+
+-ELT cũng bao gồm ba bước tương tự, nhưng có sự khác biệt về thứ tự thực hiện. Trong ELT, dữ liệu được trích xuất và tải vào kho dữ liệu trước, sau đó mới thực hiện các bước biến đổi khi cần. Cách tiếp cận này phù hợp với các hệ thống xử lý dữ liệu lớn như Data Lake, nơi dữ liệu thô được lưu trữ trước rồi mới được xử lý sau theo nhu cầu.
+-Về tốc độ xử lý, ETL có thể chậm hơn do cần xử lý dữ liệu trước khi lưu. Trong khi đó, ELT giúp tải dữ liệu nhanh hơn nhưng đòi hỏi hệ thống mạnh để xử lý sau. ETL đảm bảo dữ liệu có chất lượng tốt trước khi lưu trữ, còn ELT giúp linh hoạt hơn trong việc phân tích dữ liệu.
+-ETL phù hợp với các hệ thống có dữ liệu có cấu trúc và yêu cầu tính chính xác cao ngay từ đầu, như hệ thống ngân hàng hoặc kế toán. Trong khi đó, ELT thích hợp cho các hệ thống dữ liệu lớn, nơi có thể lưu trữ dữ liệu thô và xử lý linh hoạt theo nhu cầu, như trong các nền tảng Big Data như Hadoop hoặc Snowflake.
+-Hiện nay, ELT đã trở thành tiêu chuẩn do sự phát triển của các hệ thống dữ liệu lớn
 
