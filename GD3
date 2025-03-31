@@ -1,0 +1,34 @@
+1. CAP Theorem 
+1.1.Định nghĩa
+-CAP Theorem (định lý CAP) được đề xuất bởi Eric Brewer, phát biểu rằng trong một hệ thống phân tán, ta chỉ có thể đảm bảo được tối đa 2 trong 3 tính chất sau:
++Consistency (Nhất quán): Mọi node trong hệ thống phải có cùng một dữ liệu tại cùng một thời điểm.
++Availability (Sẵn sàng): Hệ thống luôn có thể phản hồi yêu cầu, ngay cả khi một số node bị lỗi.
++Partition Tolerance (Chịu lỗi phân vùng): Hệ thống vẫn hoạt động được ngay cả khi có sự cố mạng làm mất kết nối giữa các node.
+-Nguyên tắc chính:
++Trong môi trường thực tế, luôn có khả năng xảy ra lỗi mạng -> Partition Tolerance là bắt buộc cho một hệ thống phân tán.
+=>Do đó, một hệ thống phân tán phải chọn giữa Consistency (C) hoặc Availability (A).
+
+1.2. Các mô hình của CAP Theorem
+-CP (Consistency + Partition Tolerance)
++Hệ thống đảm bảo dữ liệu nhất quán, nhưng khi gặp lỗi mạng, một số yêu cầu có thể bị từ chối (giảm Availability).
++Ví dụ: MongoDB (khi ở chế độ strong consistency), HBase.
++Use case: Hệ thống tài chính, ngân hàng – nơi dữ liệu phải chính xác.
+-AP (Availability + Partition Tolerance)
++Hệ thống luôn phản hồi yêu cầu, nhưng dữ liệu có thể không nhất quán ngay lập tức (eventual consistency).
++Ví dụ: Cassandra, DynamoDB.
++Use case: Mạng xã hội, hệ thống cache – nơi tốc độ quan trọng hơn tính nhất quán tuyệt đối.
+-CA (Consistency + Availability) – Không tồn tại trong thực tế
++Nếu không có lỗi mạng, hệ thống có thể đảm bảo cả Consistency và Availability.
++Nhưng trong hệ thống phân tán, luôn có nguy cơ mất kết nối giữa các node → Partition Tolerance là bắt buộc.
++Ví dụ: Một hệ thống đơn lẻ như RDBMS (MySQL, PostgreSQL) có thể đảm bảo CA nhưng không chịu lỗi phân vùng.
++Các hệ thống tập trung có thể đáp ứng CA mà không phải lo về lỗi mạng nhưng không phải là hệ thống phân tán nên không được xét trong định lý CAP
+
+1.3. Ứng dụng thực tế của CAP Theorem
+-Khi thiết kế hệ thống cần chọn ưu tiên:
++Hệ thống giao dịch ngân hàng → Chọn CP để đảm bảo dữ liệu luôn chính xác.
++Mạng xã hội, thương mại điện tử → Chọn AP để đảm bảo luôn phản hồi nhanh cho người dùng.
++Hệ thống lưu trữ tập trung (Google Drive, Dropbox) → Tập trung đáp ứng CA vì không có nguy cơ xảy ra lỗi 
+
+
+2.BASE (Basically Available, Soft-state, Eventually consistent)
+2.1
