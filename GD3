@@ -30,5 +30,74 @@
 +Hệ thống lưu trữ tập trung (Google Drive, Dropbox) → Tập trung đáp ứng CA vì không có nguy cơ xảy ra lỗi 
 
 
-2.BASE (Basically Available, Soft-state, Eventually consistent)
-2.1
+2. ACID (Atomicity, Consistency, Isolation, Durability)
+2.1. Định nghĩa
+-ACID là viết tắt của 4 tính chất: Atomicity (Tính nguyên tử), Consistency (Tính nhất quán), Isolation (Tính độc lập), và Durability (Tính bền vững). Đây là những nguyên tắc cốt lõi đảm bảo rằng mọi giao dịch trong hệ quản trị cơ sở dữ liệu quan hệ (RDBMS) đều an toàn, đáng tin cậy và chính xác.
+-Một transaction (giao dịch) là một nhóm thao tác (như thêm, cập nhật, xóa dữ liệu) cần được thực hiện trọn vẹn hoặc không thực hiện gì cả. Nếu một bước trong transaction thất bại, toàn bộ giao dịch sẽ bị hủy và cơ sở dữ liệu sẽ trở về trạng thái ban đầu.
+Ví dụ: chuyển tiền ngân hàng gồm 2 thao tác - trừ tiền người gửi và cộng tiền người nhận. Nếu 1 trong 2 thao tác thất bại thì hệ thống cần được hoàn tác về hệ thống ban đầu trước khi bắt đầu giao dịch
+
+2.2. Các tính chất của ACID
+-Atomicity (Tính nguyên tử)
++Một giao dịch là không thể chia nhỏ: nó hoặc hoàn tất toàn bộ, hoặc không thực hiện gì.
++Nếu bất kỳ bước nào trong giao dịch thất bại, toàn bộ giao dịch bị hủy bỏ và dữ liệu được khôi phục về trạng thái trước đó.
+Ví dụ:Khi bạn chuyển tiền từ A → B:
+      Trừ tiền A thành công
+      Cộng tiền B  (lỗi) -> Hệ thống rollback, hoàn lại tiền cho A => đảm bảo không có mất mát hoặc ghi sai dữ liệu.
+
+-Consistency (Tính nhất quán)
++Dữ liệu luôn tuân thủ các quy tắc, ràng buộc đã định nghĩa trong hệ thống.
++Sau mỗi giao dịch, dữ liệu chuyển từ một trạng thái hợp lệ -> trạng thái hợp lệ khác.
+Ví dụ:
+  Nếu hệ thống yêu cầu "số dư tài khoản ≥ 0", thì mọi giao dịch không được làm vi phạm điều kiện đó.
+  Bạn không thể rút 10 triệu từ tài khoản chỉ có 5 triệu.
+
+-Isolation (Tính cô lập)
++Các giao dịch đồng thời phải hoạt động độc lập với nhau, như thể chúng được xử lý lần lượt. Các giao dịch chỉ có thể đươc thực hiện đồng thời nếu chúng không liên quan gì đến nhau
+-> Tránh xung đột hoặc trạng thái dữ liệu sai do truy cập cùng lúc.
+Ví dụ:
+  Giao dịch 1: rút tiền
+  Giao dịch 2: kiểm tra số dư
+  → isolation đảm bảo rằng số dư được kiểm tra là số dư sau khi đã rút tiền thành công 
+
+-Durability (Tính bền vững)
++Sau khi giao dịch hoàn thành, dữ liệu phải được lưu vĩnh viễn, kể cả khi hệ thống gặp sự cố (mất điện, crash...).
+Ví dụ:
+  Sau khi bạn đặt hàng thành công, nếu mất điện, đơn hàng vẫn phải được lưu lại => nhờ hệ thống đã ghi dữ liệu vào ổ cứng hoặc log.
+
+3. BASE (Basically Available, Soft-state, Eventually Consistent)
+-BASE là viết tắt của:
++Basically Available (Cơ bản là sẵn sàng),
++Soft-state (Trạng thái mềm),
++Eventually consistent (Nhất quán cuối cùng).
+-Đây là một triết lý thiết kế trong các hệ thống cơ sở dữ liệu phân tán, thường được áp dụng trong các hệ NoSQL như MongoDB, Cassandra, DynamoDB, v.v.
+-BASE được xem là sự thỏa hiệp (relaxed) so với mô hình ACID. Thay vì đảm bảo độ chính xác và toàn vẹn dữ liệu ở mọi thời điểm như ACID, BASE ưu tiên hiệu suất, tính sẵn sàng và khả năng mở rộng của hệ thống, đặc biệt trong môi trường có lượng dữ liệu lớn và yêu cầu đáp ứng nhanh.
+-Tại sao cần BASE?
+  +Trong các hệ thống phân tán lớn (Big Data, mạng xã hội, thương mại điện tử toàn cầu…), việc đồng bộ dữ liệu ngay lập tức giữa tất cả các node có thể làm   chậm hệ thống hoặc gây tắc nghẽn. BASE chấp nhận rằng dữ liệu có thể không nhất quán ngay lập tức, miễn là nó sẽ nhất quán trong tương lai gần.
+-BASE phù hợp cho các hệ thống:
++Cần phản hồi nhanh cho người dùng.
++Chấp nhận dữ liệu tạm thời không đồng bộ.
++Phải xử lý dữ liệu khổng lồ và lưu lượng truy cập cao.
+-Ví dụ thực tế:
+  +Khi bạn đăng bài viết trên một mạng xã hội:
+  +Một số người dùng có thể thấy bài viết gần như ngay lập tức.
+  +Một số khác có thể mất vài giây hoặc vài phút mới thấy.
+  → Hệ thống vẫn phản hồi được nhanh, đảm bảo sẵn sàng (availability), còn tính nhất quán được xử lý dần theo thời gian.
+
+3.2. Các tính chất của BASE
+-Basically Available (Sẵn sàng cơ bản)
++Hệ thống luôn đảm bảo có phản hồi cho người dùng, dù phản hồi đó có thể không đầy đủ hoặc không mới nhất.
++Chấp nhận “trả lời bất cứ thứ gì còn khả dụng” để giữ trải nghiệm người dùng mượt mà.
+Ví dụ:
+Khi một node bị lỗi, bạn vẫn truy cập được dữ liệu cũ từ node khác, không bị lỗi 500 (Internal Server Error).
+
+-Soft-state (Trạng thái mềm)
++Trạng thái của hệ thống có thể thay đổi theo thời gian, kể cả không có hành động trực tiếp từ client.
++Do các node sẽ đồng bộ dữ liệu dần dần nên trạng thái từng phần trong hệ thống có thể tạm thời không đồng bộ.
+Ví dụ:
+Bạn sửa hồ sơ cá nhân, node bạn sửa gửi bản cập nhật đến node khác. Node kia sẽ cập nhật sau vài giây → trạng thái mềm, thay đổi theo thời gian.
+
+-Eventually Consistent (Nhất quán cuối cùng)
++Dữ liệu không cần phải đồng nhất ngay lập tức giữa các node, nhưng sẽ đồng bộ sau một khoảng thời gian nhất định.
++Đặc trưng cho các hệ thống ưu tiên tốc độ, sẵn sàng và khả năng mở rộng cao.
+Ví dụ:
+Bạn cập nhật trạng thái Facebook, bạn bè của bạn có thể thấy bản cũ trong vài giây đầu tiên trước khi cập nhật mới được đồng bộ hoàn toàn.
