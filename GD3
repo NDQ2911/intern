@@ -84,20 +84,19 @@ Ví dụ:
   → Hệ thống vẫn phản hồi được nhanh, đảm bảo sẵn sàng (availability), còn tính nhất quán được xử lý dần theo thời gian.
 
 3.2. Các tính chất của BASE
--Basically Available (Sẵn sàng cơ bản)
-+Hệ thống luôn đảm bảo có phản hồi cho người dùng, dù phản hồi đó có thể không đầy đủ hoặc không mới nhất.
-+Chấp nhận “trả lời bất cứ thứ gì còn khả dụng” để giữ trải nghiệm người dùng mượt mà.
-Ví dụ:
-Khi một node bị lỗi, bạn vẫn truy cập được dữ liệu cũ từ node khác, không bị lỗi 500 (Internal Server Error).
+a. Basically Available (Cơ bản là sẵn sàng)
+-Hệ thống luôn cố gắng phản hồi yêu cầu của người dùng, ngay cả khi có sự cố hoặc một phần hệ thống không hoạt động.
+-Không đảm bảo mọi phản hồi đều là chính xác nhất tại thời điểm đó, nhưng vẫn có phản hồi để giữ hệ thống hoạt động liên tục.
+Ví dụ: Khi một node trong hệ thống bị lỗi, hệ thống vẫn có thể phản hồi bằng dữ liệu từ các node khác hoặc sử dụng dữ liệu cũ.
 
--Soft-state (Trạng thái mềm)
-+Trạng thái của hệ thống có thể thay đổi theo thời gian, kể cả không có hành động trực tiếp từ client.
-+Do các node sẽ đồng bộ dữ liệu dần dần nên trạng thái từng phần trong hệ thống có thể tạm thời không đồng bộ.
-Ví dụ:
-Bạn sửa hồ sơ cá nhân, node bạn sửa gửi bản cập nhật đến node khác. Node kia sẽ cập nhật sau vài giây → trạng thái mềm, thay đổi theo thời gian.
+b. Soft-state (Trạng thái mềm)
+-Trạng thái hệ thống có thể thay đổi theo thời gian, ngay cả khi không có thao tác từ người dùng.
+-Điều này xảy ra vì hệ thống liên tục đồng bộ hóa dữ liệu giữa các node, cập nhật trạng thái nội bộ, hoặc thực hiện các xử lý nền (background).
+-Dữ liệu tạm thời có thể không phản ánh chính xác trạng thái cuối cùng, nhưng sẽ được điều chỉnh dần.
+Ví dụ: Khi cập nhật thông tin hồ sơ người dùng, node A cập nhật trước, node B sẽ đồng bộ sau một khoảng thời gian -> trạng thái có thể "mềm" trong lúc chờ đồng bộ.
 
--Eventually Consistent (Nhất quán cuối cùng)
-+Dữ liệu không cần phải đồng nhất ngay lập tức giữa các node, nhưng sẽ đồng bộ sau một khoảng thời gian nhất định.
-+Đặc trưng cho các hệ thống ưu tiên tốc độ, sẵn sàng và khả năng mở rộng cao.
-Ví dụ:
-Bạn cập nhật trạng thái Facebook, bạn bè của bạn có thể thấy bản cũ trong vài giây đầu tiên trước khi cập nhật mới được đồng bộ hoàn toàn.
+c. Eventually Consistent (Nhất quán cuối cùng)
+-Hệ thống đảm bảo rằng, sau một khoảng thời gian, tất cả các node sẽ có cùng một trạng thái dữ liệu.
+-Khác với ACID (đòi hỏi dữ liệu nhất quán ngay lập tức), BASE cho phép dữ liệu không đồng nhất tạm thời, miễn là nó trở nên đồng nhất về sau.
+-Đây là yếu tố cốt lõi giúp hệ thống đạt được tính mở rộng và hiệu suất cao.
+Ví dụ: Khi bạn cập nhật ảnh đại diện, một số người nhìn thấy ảnh mới sau vài giây. Điều đó chấp nhận được trong hệ BASE vì tính nhất quán sẽ được đảm bảo "cuối cùng".
