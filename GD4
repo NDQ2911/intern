@@ -1,120 +1,152 @@
-1. Hadoop – Kiến trúc Logical và Physical
+1. Hadoop
 1.1 Logical Architecture
-HDFS (Hadoop Distributed File System):
-Lưu trữ dữ liệu lớn theo dạng block.
-Thành phần chính:
-NameNode: Quản lý metadata (thông tin file/block).
-DataNode: Lưu trữ dữ liệu thực tế.
-YARN (Yet Another Resource Negotiator):
-Resource Manager: Quản lý tài nguyên toàn cluster.
-Node Manager: Quản lý tài nguyên trên từng node.
-MapReduce:
-Framework xử lý dữ liệu theo mô hình Map và Reduce, phân tán trên nhiều node.
+-HDFS (Hadoop Distributed File System):
++Mục đích: Lưu trữ dữ liệu lớn theo dạng block. Dữ liệu được chia thành các block nhỏ và phân phối trên các máy tính trong cluster.
++Thành phần chính:
+  NameNode: Quản lý metadata (thông tin về các file, block, các node lưu trữ). NameNode không lưu trữ dữ liệu thực tế mà chỉ quản lý thông tin về vị trí của các block trên cluster.
+  DataNode: Lưu trữ dữ liệu thực tế. Mỗi DataNode chứa các block dữ liệu và báo cáo lại cho NameNode thông tin về các block mà nó quản lý.
+-YARN (Yet Another Resource Negotiator):
++Mục đích: Quản lý tài nguyên trong hệ thống và phân bổ tài nguyên cho các job.
++Thành phần chính:
+  Resource Manager: Chịu trách nhiệm phân bổ tài nguyên trên toàn bộ cluster.
+  Node Manager: Quản lý tài nguyên của từng node trong cluster, báo cáo tình trạng tài nguyên lên Resource Manager.
+  MapReduce:
++Mục đích:  Framework xử lý dữ liệu theo mô hình Map và Reduce, được phân tán và thực thi trên nhiều node trong cluster.
+            Các job MapReduce được chia thành các task nhỏ, phân phối và thực thi trên nhiều node.
 
 1.2 Physical Architecture
-Master Node:
-Chạy NameNode và Resource Manager.
-Worker Nodes:
-Chạy DataNode và Node Manager.
-Cluster:
-Tập hợp nhiều Worker Node để lưu trữ và xử lý song song dữ liệu lớn.
+-Master Node:
+  Chạy NameNode và Resource Manager. Đây là các thành phần chính điều phối hoạt động của cluster.
+-Worker Nodes:
+  Chạy DataNode và Node Manager, chịu trách nhiệm lưu trữ và xử lý dữ liệu thực tế.
+-Cluster:
+  Tập hợp nhiều Worker Node và các Master Node (được phân phối để cung cấp khả năng mở rộng và độ chịu lỗi).
 
-6. Sự khác biệt giữa Hadoop 2 và Hadoop 3
-Về lưu trữ:
-Hadoop 2: Lưu 3 bản sao dữ liệu.
-Hadoop 3: Sử dụng Erasure Coding, tiết kiệm tới 50% dung lượng.
-Về NameNode:
-Hadoop 2: 1 NameNode Active + 1 Standby.
-Hadoop 3: Hỗ trợ nhiều NameNode Active cùng lúc.
-Về Container support:
-Hadoop 2: Không hỗ trợ container.
-Hadoop 3: Hỗ trợ chạy Docker container.
-Về GPU support:
-Hadoop 2: Không hỗ trợ GPU.
-Hadoop 3: Hỗ trợ GPU scheduling.
-Về YARN Timeline Service:
-Hadoop 2: Phiên bản V1.
-Hadoop 3: Cải tiến với phiên bản V2.
-Về yêu cầu Java:
-Hadoop 2: Java 7.
-Hadoop 3: Java 8 trở lên.
-Tóm lại Hadoop 3:
-Tăng hiệu quả lưu trữ, hỗ trợ tính năng hiện đại như Docker, GPU, và khả năng chịu lỗi cao hơn.
+2. Sự khác biệt giữa Hadoop 2 và Hadoop 3
+2.1 Lưu trữ:
+-Hadoop 2:
+  Sử dụng phương pháp lưu trữ dữ liệu với 3 bản sao của mỗi block để đảm bảo độ tin cậy và khả năng chịu lỗi.
+-Hadoop 3:
+Thay thế phương pháp sao lưu bằng Erasure Coding, cho phép lưu trữ hiệu quả hơn, giảm chi phí lưu trữ đến 50% mà không làm giảm độ tin cậy.
 
-2. Apache Spark – Kiến trúc Logical và Physical
-2.1 Logical Architecture
-Driver Program:
-Điều phối toàn bộ ứng dụng Spark.
-Gửi công việc tới Cluster Manager.
-Cluster Manager:
-Quản lý và phân bổ tài nguyên (YARN, Standalone hoặc Kubernetes).
-Executors:
-Worker process thực thi task trên các node.
-DAG Scheduler và Task Scheduler:
-DAG Scheduler: Phân tách job thành các stages.
-Task Scheduler: Giao task cho executors.
+2.2 NameNode:
+-Hadoop 2:
+  Hệ thống chỉ có một NameNode Active và một NameNode Standby để đảm bảo tính sẵn sàng cao, nhưng chỉ có thể có một NameNode xử lý các yêu cầu tại một thời điểm.
+-Hadoop 3:
+  Hỗ trợ nhiều NameNode Active cùng lúc, cho phép phân chia dữ liệu và cải thiện khả năng mở rộng cũng như tính sẵn sàng.
 
-2.2 Physical Architecture
-Một Driver chạy trên node chính.
-Nhiều Executors chạy song song trên các node Worker.
-Executors có bộ nhớ riêng, thực hiện phép tính độc lập.
+2.3 Container Support:
+-Hadoop 2:
+  Không hỗ trợ containers, chỉ hỗ trợ các ứng dụng truyền thống chạy trên node.
+-Hadoop 3:
+  Hỗ trợ Docker containers, giúp dễ dàng triển khai và mở rộng các ứng dụng và dịch vụ trong môi trường container hóa.
 
-3. Apache Kafka – Kiến trúc Logical và Physical
+2.4 GPU Support:
+-Hadoop 2:
+  Không hỗ trợ GPU scheduling, chỉ có thể xử lý công việc CPU.
+-Hadoop 3:
+  Hỗ trợ GPU scheduling, giúp tận dụng các GPU trong cluster để xử lý các tác vụ tính toán nặng, đặc biệt là trong các công việc học máy (machine learning).
+
+2.5 YARN Timeline Service:
+-Hadoop 2:
+  Phiên bản V1 của YARN không có khả năng theo dõi chi tiết thời gian của các ứng dụng.
+-Hadoop 3:
+  YARN Timeline Service V2 được cải tiến để cung cấp khả năng theo dõi và lưu trữ thông tin chi tiết về các ứng dụng trong cluster.
+
+2.6 Yêu cầu Java:
+-Hadoop 2:
+  Chạy trên Java 7.
+-Hadoop 3:
+  Cần Java 8 hoặc phiên bản cao hơn để tận dụng các tính năng mới.
+
+2.7 Tóm lại:
+-Hadoop 3 có sự cải tiến lớn về khả năng lưu trữ, hỗ trợ container hóa, GPU, và nâng cao hiệu quả hoạt động với các tính năng như Erasure Coding và YARN Timeline Service V2.
+
+
+3. Apache Spark 
 3.1 Logical Architecture
-Producers: Ứng dụng gửi message vào Kafka topics.
-Consumers: Ứng dụng đọc message từ Kafka topics.
-Kafka Brokers: Lưu trữ và phân phối message.
-Zookeeper (Kafka 3.x): Quản lý metadata (Kafka 4.x bỏ Zookeeper).
+-Driver Program:
+  Điều phối toàn bộ ứng dụng Spark, quản lý các job và gửi công việc tới Cluster Manager.
+-Cluster Manager:
+  Quản lý tài nguyên và phân bổ cho các worker node. Có thể là YARN, Standalone hoặc Kubernetes.
+-Executors:
+  Là các worker process thực thi các task được phân bổ từ Driver.
+-DAG Scheduler và Task Scheduler:
+  +DAG Scheduler: Phân tách job thành các stages dựa trên đồ thị phụ thuộc.
+  +Task Scheduler: Giao các task cụ thể cho Executors.
 
 3.2 Physical Architecture
-Một Kafka Cluster gồm nhiều Broker.
-Dữ liệu được chia nhỏ thành nhiều Partitions và lưu trên các Broker khác nhau.
-Partitions được replicate để đảm bảo tính chịu lỗi (fault tolerance).
+Driver chạy trên một node chủ (master node).
+Executors chạy trên các worker node và thực thi các tác vụ song song.
+Executors có bộ nhớ riêng, giúp xử lý dữ liệu độc lập, giảm độ trễ.
 
-4. Airflow – Logical và Physical Architecture
+4. Apache Kafka 
 4.1 Logical Architecture
-Scheduler: Lên lịch cho các task.
-Executor: Thực thi task theo lịch.
-Web Server: Giao diện người dùng để quản lý workflow.
-Metadata Database: Lưu trạng thái và lịch sử DAG.
+-Producers:
+  Các ứng dụng gửi các message vào Kafka topics.
+-Consumers:
+  Các ứng dụng đọc các message từ Kafka topics.
+-Kafka Brokers:
+  Quản lý và phân phối các message, đảm bảo tính phân tán và độ tin cậy.
+-Zookeeper (Kafka 3.x):
+  Quản lý metadata như thông tin về các broker và topic. Tuy nhiên, trong Kafka 4.x, Kafka loại bỏ sự phụ thuộc vào Zookeeper và sử dụng Kafka Controller.
 
 4.2 Physical Architecture
-Các thành phần chạy trên server riêng biệt hoặc cùng server:
-Scheduler.
-Web Server.
-Metadata Database (thường dùng PostgreSQL, MySQL).
-Có thể mở rộng bằng cách scale-out nhiều Worker Node.
+-Kafka Cluster gồm nhiều Broker, mỗi broker chịu trách nhiệm lưu trữ và quản lý một phần của dữ liệu.
+-Partitions: Dữ liệu được chia thành các Partitions và phân phối trên các Broker khác nhau.
+-Replication: Các Partitions được replicate để đảm bảo tính chịu lỗi (fault tolerance).
 
-5. NiFi – Logical và Physical Architecture
+5. Airflow 
 5.1 Logical Architecture
-FlowFile: Đơn vị dữ liệu nhỏ trong hệ thống.
-Processor: Thực hiện thao tác trên FlowFile (như get, put, transform).
-Connection: Đường nối giữa các Processor.
-Controller Service: Quản lý tài nguyên dùng chung (kết nối DB, queue...).
+-Scheduler:
+  Lên lịch và điều phối các task trong workflow, đảm bảo chúng được thực thi theo thứ tự.
+-Executor:
+  Thực thi các task theo lịch trình của Scheduler.
+-Web Server:
+  Giao diện người dùng cho phép quản lý và giám sát các DAGs (Directed Acyclic Graphs).
+-Metadata Database:
+  Lưu trữ trạng thái và lịch sử của các DAG đã được thực thi.
+
 5.2 Physical Architecture
-Một hoặc nhiều Node tạo thành NiFi Cluster.
-Zookeeper dùng để quản lý cluster state (tùy chọn).
+-Các thành phần có thể chạy trên các server riêng biệt hoặc trên một server duy nhất:
+-Scheduler, Web Server, và Metadata Database.
+-Workers: Chạy song song các task từ các DAGs.
+
+6. NiFi 
+6.1 Logical Architecture
+-FlowFile:
+  Đơn vị dữ liệu trong hệ thống NiFi, chuyển qua các Processor.
+-Processor:
+  Các thành phần thực hiện thao tác như get, put, transform trên FlowFile.
+-Connection:
+  Đường nối giữa các Processor để tạo ra dòng chảy dữ liệu.
+-Controller Service:
+  Quản lý các tài nguyên dùng chung, như kết nối đến cơ sở dữ liệu, queues, v.v.
+
+6.2 Physical Architecture
+-Một hoặc nhiều Node tạo thành NiFi Cluster.
+-Zookeeper (tùy chọn) dùng để quản lý cluster state.
 
 7. Sự khác biệt giữa Kafka 3 và Kafka 4
-Về Zookeeper:
+7.1 Zookeeper:
 Kafka 3: Phụ thuộc vào Zookeeper để quản lý metadata.
-Kafka 4: Hoàn toàn không cần Zookeeper, thay bằng Controller nội bộ.
-Về Metadata Management:
-Kafka 3: Metadata lưu trữ trong Zookeeper.
-Kafka 4: Metadata quản lý bởi Kafka Controller (chạy theo Raft Protocol).
-Về Scalability:
-Kafka 3: Giới hạn vì phụ thuộc vào Zookeeper.
-Kafka 4: Khả năng mở rộng mạnh mẽ, độc lập.
-Về Replication:
-Kafka 3: Leader-Follower model.
-Kafka 4: Raft Consensus Protocol giúp replication chính xác hơn.
-Về API:
-Kafka 3: API cũ.
-Kafka 4: API mới, mạnh mẽ và chuẩn hóa hơn.
-Tóm lại Kafka 4:
-Tăng hiệu suất, độ tin cậy, đơn giản hóa việc vận hành bằng cách loại bỏ Zookeeper.
+Kafka 4: Loại bỏ Zookeeper, thay bằng Controller nội bộ, đơn giản hóa kiến trúc.
 
-✅ Kết luận nhanh:
-Hadoop 3 → hiệu quả lưu trữ, linh hoạt và khả năng mở rộng cao hơn Hadoop 2.
-Kafka 4 → tối ưu hóa hoàn toàn hiệu suất và vận hành so với Kafka 3.
-Spark, Airflow, NiFi → là những thành phần cốt lõi cho hệ thống Big Data hiện đại.
+7.2 Metadata Management:
+Kafka 3: Lưu trữ metadata trong Zookeeper.
+Kafka 4: Quản lý metadata thông qua Kafka Controller (sử dụng Raft Protocol).
+
+7.3 Scalability:
+Kafka 3: Phụ thuộc vào Zookeeper, gây khó khăn trong việc mở rộng.
+Kafka 4: Khả năng mở rộng mạnh mẽ hơn, độc lập và không phụ thuộc vào Zookeeper.
+
+7.4 Replication:
+Kafka 3: Leader-Follower model.
+Kafka 4: Sử dụng Raft Consensus Protocol để cải thiện độ chính xác trong replication.
+
+7.5 API:
+Kafka 3: API cũ, phức tạp và không linh hoạt.
+Kafka 4: API mới, dễ sử dụng hơn và hỗ trợ tính năng mạnh mẽ hơn.
+
+7.6 Kết luận:
+Kafka 4: Cải tiến hiệu suất, khả năng mở rộng và đơn giản hóa việc vận hành bằng cách loại bỏ Zookeeper.
