@@ -1,0 +1,99 @@
+1. Lambda Architecture
+1.1. Khái niệm và nguồn gốc
+Lambda Architecture được Nathan Marz đề xuất như một cách để giải quyết vấn đề về việc xử lý lượng lớn dữ liệu cần cả độ chính xác và thời gian phản hồi nhanh. Mô hình này sử dụng kết hợp hai phương pháp xử lý: batch processing và stream processing để tận dụng ưu điểm của từng phương pháp.
+
+1.2. Cấu trúc chi tiết
+Lambda Architecture gồm 3 tầng:
+-Batch Layer (tầng xử lý theo lô):
+    +Lưu trữ toàn bộ dữ liệu gốc không thay đổi (immutable).
+    +Thực hiện xử lý dữ liệu lớn theo lô (batch jobs) để tính toán các chỉ số, phân tích toàn diện.
+    +Ưu điểm: xử lý toàn bộ dữ liệu giúp kết quả rất chính xác.
+    +Nhược điểm: xử lý chậm, có độ trễ (latency) cao.
+-Speed Layer (tầng xử lý thời gian thực):
+    +Xử lý dữ liệu mới theo dạng streaming để giảm độ trễ.
+    +Tính toán nhanh các dữ liệu mới, nhưng thường không xử lý lại dữ liệu cũ.
+    +Kết quả có thể thiếu chính xác, chỉ là tạm thời để phục vụ các ứng dụng realtime.
+-Serving Layer (tầng phục vụ dữ liệu):
+    +Kết hợp kết quả từ batch layer và speed layer.
+    +Cung cấp dữ liệu cuối cùng đến các ứng dụng, API, báo cáo.
+    +Chịu trách nhiệm hợp nhất dữ liệu batch và realtime, đảm bảo độ chính xác và kịp thời.
+
+1.3. Ưu điểm
+-Đảm bảo được tính chính xác và độ tin cậy cao nhờ xử lý batch trên toàn bộ dữ liệu.
+-Khả năng cập nhật dữ liệu nhanh chóng qua tầng speed layer.
+-Kiến trúc khá linh hoạt, có thể mở rộng và tùy chỉnh cho nhiều loại bài toán khác nhau.
+
+1.4. Nhược điểm
+-Độ phức tạp cao: Phải duy trì hai hệ thống xử lý khác nhau (batch và streaming) cùng một lúc, gây khó khăn trong phát triển và vận hành.
+-Chi phí cao: Cần đầu tư hạ tầng lớn cho batch processing và stream processing.
+-Khó đồng bộ dữ liệu: Việc hợp nhất kết quả từ hai tầng có thể dẫn đến các vấn đề về nhất quán và đồng bộ.
+-Thời gian phát triển lâu: Các team phát triển cần phải xây dựng và quản lý hai pipeline khác nhau.
+
+1.5. VD
+-Batch Layer: Apache Hadoop, Apache Spark (batch jobs)
+-Speed Layer: Apache Storm, Apache Spark Streaming, Apache Flink
+-Serving Layer: HBase, Cassandra hoặc hệ thống truy vấn có khả năng tổng hợp dữ liệu từ batch và speed.
+
+2. Kappa Architecture
+2.1. Khái niệm và nguồn gốc
+-Kappa Architecture được Jay Kreps đề xuất nhằm giảm sự phức tạp và chi phí vận hành của Lambda Architecture bằng cách loại bỏ tầng batch. Ý tưởng chính là xử lý mọi dữ liệu theo dạng stream, đồng thời lưu trữ dữ liệu gốc trong một hệ thống log có khả năng replay (phát lại) dữ liệu để tái xử lý khi cần.
+
+2.2. Cấu trúc chi tiết
+-Single Streaming Pipeline:
+    +Tất cả dữ liệu được đưa qua một pipeline xử lý streaming duy nhất.
+    +Dữ liệu gốc được lưu trữ trong một log (thường là Apache Kafka) để có thể replay lại từ đầu khi cần.
+    +Các phép biến đổi (transformations) dữ liệu được thực hiện ngay trong pipeline streaming.
+-Replay mechanism:
+    +Khi cần tái xử lý hoặc cập nhật logic xử lý, dữ liệu trong log có thể được phát lại, xử lý lại từ đầu một cách đồng nhất.
+-Serving layer:
+    +Kết quả xử lý cũng được lưu trữ trong các kho dữ liệu hỗ trợ truy vấn thời gian thực.
+
+2.3. Ưu điểm
+-Kiến trúc đơn giản hơn: Chỉ cần quản lý một pipeline xử lý streaming duy nhất.
+-Dễ dàng bảo trì và phát triển: Giảm bớt sự phức tạp và rủi ro đồng bộ dữ liệu.
+-Khả năng tái xử lý: Nhờ log dữ liệu gốc có thể replay lại khi logic xử lý thay đổi.
+-Phù hợp với hệ thống thời gian thực hiện đại: Khi công nghệ stream processing phát triển mạnh, khả năng xử lý, mở rộng, và fault tolerance rất tốt.
+
+2.4. Nhược điểm
+-Đòi hỏi hệ thống stream processing phải rất mạnh mẽ để xử lý toàn bộ dữ liệu.
+-Một số bài toán phức tạp, hoặc cần tính toán trên toàn bộ dữ liệu lịch sử, batch processing có thể tối ưu hơn.
+-Đôi khi khó khăn trong việc xử lý dữ liệu không đồng nhất hoặc xử lý phức tạp cần nhiều bước.
+
+2.5. VD
+-Log lưu trữ: Apache Kafka, Amazon Kinesis
+-Stream processing: Apache Kafka Streams, Apache Flink, Apache Spark Structured Streaming
+-Serving layer: Elasticsearch, Cassandra, hoặc các kho dữ liệu hỗ trợ real-time query
+
+3. So sánh và ứng dụng thực tế
+-Xử lý dữ liệu	
+    +Lambda Architecture: Kết hợp batch + streaming	
+    +Kappa Architecture: Chỉ streaming
+-Độ phức tạp hệ thống	
+    Lambda Architecture: Cao, phải vận hành 2 pipeline riêng biệt	
+    Kappa Architecture: Thấp, 1 pipeline duy nhất
+-Độ chính xác	
+    Lambda Architecture: Rất cao nhờ batch layer xử lý dữ liệu đầy đủ	
+    Kappa Architecture: Cao, nhưng phụ thuộc vào khả năng xử lý stream
+-Độ trễ	
+    Lambda Architecture: Batch layer có độ trễ, speed layer giảm trễ	
+    Kappa Architecture: Thấp, xử lý gần như real-time liên tục
+-Khả năng mở rộng	
+    Lambda Architecture: Khó hơn, phải mở rộng 2 hệ thống riêng	
+    Kappa Architecture: Dễ dàng mở rộng theo dòng dữ liệu
+-Chi phí vận hành	
+    Lambda Architecture: Cao do phức tạp và cần nhiều tài nguyên	
+    Kappa Architecture: Thấp hơn so với Lambda
+-Tính năng tái xử lý	
+    Lambda Architecture: Có batch layer đảm bảo tái xử lý toàn bộ dữ liệu	
+    Kappa Architecture: Replay dữ liệu từ log để tái xử lý
+
+3.1. Nên dùng Lambda Architecture khi:
+-Cần sự đảm bảo tuyệt đối về độ chính xác và nhất quán dữ liệu.
+-Bài toán phức tạp, cần kết hợp cả dữ liệu lịch sử với dữ liệu mới liên tục.
+-Các tổ chức có đủ nguồn lực để vận hành hệ thống phức tạp.
+
+3.2. Nên dùng Kappa Architecture khi:
+-Ưu tiên đơn giản hóa hệ thống, giảm chi phí vận hành.
+-Ứng dụng cần xử lý thời gian thực với tốc độ cao.
+-Hệ thống stream processing đủ mạnh để xử lý toàn bộ dữ liệu.
+-Muốn dễ dàng thay đổi và cập nhật logic xử lý dữ liệu.
