@@ -1,1 +1,90 @@
 
+Lưu trữ log service(cập nhật vào file log_service_output.ndjson) lên HDFS (Rotate file mỗi 5 phút/ delay log tối đa 1 phút), đặt tên là rotate_log.sh
+#!/bin/bash
+
+INPUT_LOG="/home/hadoop/log_service_output.ndjson"
+LOG_DIR="/home/hadoop/log_data"
+HDFS_LOG_DIR="/logs"
+UPLOADED_LIST="/home/hadoop/uploaded_files.txt"
+
+mkdir -p "$LOG_DIR"
+touch "$INPUT_LOG"
+touch "$UPLOADED_LIST"
+
+last_rotation=0
+
+while true; do
+  now=$(date +%s)
+
+  # 1. Kiểm tra xem đã đến lúc rotate chưa (mỗi 5 phút)
+  if (( now - last_rotation >= 300 )); then
+    rounded=$(( now - now % 300 ))
+    timestamp=$(date -d @$rounded +"%Y%m%d_%H%M")
+    log_file="$LOG_DIR/log_${timestamp}.ndjson"
+
+    if [ -s "$INPUT_LOG" ]; then
+      mv "$INPUT_LOG" "$log_file"
+      touch "$INPUT_LOG"
+      echo "Created log file: $log_file"
+    else
+      echo "No new log to rotate at $(date)"
+    fi
+
+    last_rotation=$now
+  fi
+
+  # 2. Kiểm tra và upload file mới lên HDFS (mỗi phút)
+  for file in "$LOG_DIR"/log_*.ndjson; do
+    filename=$(basename "$file")
+    if ! grep -qx "$filename" "$UPLOADED_LIST"; then
+      echo "Uploading $filename to HDFS..."
+      hdfs dfs -put "$file" "$HDFS_LOG_DIR"
+      if [ $? -eq 0 ]; then
+        echo "$filename" >> "$UPLOADED_LIST"
+        echo "Uploaded and recorded: $filename"
+      else
+        echo "Upload failed for: $filename"
+      fi
+    fi
+  done
+
+  sleep 60
+done
+Viết job Spark để tính toán report từ log đã lưu
+Số lượt đăng nhập theo giờ
+import org.apache.spark.sql.functions._
+
+// Đọc dữ liệu log từ HDFS (sửa đường dẫn nếu cần)
+val df = spark.read.json("hdfs://172.17.143.141:9000/logs/*.ndjson")
+
+// Chuyển timestamp từ String -> TimestampType
+val dfWithTS = df.withColumn("ts", to_timestamp(col("timestamp")))
+
+// Lọc các hành động login
+val loginDF = dfWithTS.filter(col("action") === "login")
+
+// Nhóm theo giờ (truncate timestamp về giờ)
+val loginCountByHour = loginDF
+  .withColumn("hour", date_trunc("hour", col("ts")))
+  .groupBy("hour")
+  .count()
+  .orderBy("hour")
+
+// Hiển thị kết quả
+loginCountByHour.show(100, false)
+
+Số lượt hành động theo người dùng
+import org.apache.spark.sql.functions._
+
+// Đọc dữ liệu từ HDFS
+val df = spark.read.json("hdfs://172.17.143.141:9000/logs/*.ndjson")
+
+// Đếm số hành động theo từng người dùng
+val actionCountByUser = df
+  .groupBy("user")
+  .count()
+  .orderBy(desc("count"))
+
+// Hiển thị kết quả
+actionCountByUser.show(100, false)
+
