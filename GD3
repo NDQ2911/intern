@@ -10,7 +10,7 @@
 
 1.2. Các mô hình của CAP Theorem
 -CP (Consistency + Partition Tolerance)
-+Hệ thống đảm bảo dữ liệu nhất quán, nhưng khi gặp lỗi mạng, một số yêu cầu có thể bị từ chối (giảm Availability).
++Hệ thống đảm bảo dữ liệu nhất quán, nhưng khi gặp lỗi mạng, một số yêu cầu có thể bị từ chối.
 +Ví dụ: MongoDB (khi ở chế độ strong consistency), HBase.
 +Use case: Hệ thống tài chính, ngân hàng – nơi dữ liệu phải chính xác.
 -AP (Availability + Partition Tolerance)
