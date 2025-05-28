@@ -54,7 +54,7 @@ Viết job Spark để tính toán report từ log đã lưu
 Số lượt đăng nhập theo giờ
 import org.apache.spark.sql.functions._
 
-// Đọc dữ liệu log từ HDFS (sửa đường dẫn nếu cần)
+// Đọc dữ liệu log từ HDFS 
 val df = spark.read.json("hdfs://172.17.143.141:9000/logs/*.ndjson")
 
 // Chuyển timestamp từ String -> TimestampType
